@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "WoundSim: Gymnasium-Compatible RL Environments for Wound Healing Treatment Optimization"
+version: 0.1.0
+date-released: "2026-04-21"
+authors:
+  - family-names: "Dhia"
+    given-names: "Hass"
+    email: "hass@smarttechinvest.com"
+    affiliation: "Smart Technology Investments Research Institute"
+license: MIT
+repository-code: "https://github.com/smarttechinvest/woundsim"
+keywords:
+  - reinforcement-learning
+  - wound-healing
+  - gymnasium
+  - macrophage-polarization
+  - hyperbaric-oxygen-therapy
+  - ischemic-wound
+  - biomedical-simulation

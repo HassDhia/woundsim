@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "woundsim"
+version = "0.1.0"
+description = "Gymnasium-compatible reinforcement learning environments for wound healing treatment optimization"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Hass Dhia", email = "hass@smarttechinvest.com"},
+]
+keywords = [
+    "reinforcement-learning",
+    "wound-healing",
+    "gymnasium",
+    "biomedical",
+    "macrophage-polarization",
+    "hyperbaric-oxygen",
+    "ischemic-wound",
+    "ode-model",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "gymnasium>=0.29.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.optional-dependencies]
+rl = [
+    "stable-baselines3>=2.1.0",
+    "torch>=2.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "woundsim[rl,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/smarttechinvest/woundsim"
+Documentation = "https://github.com/smarttechinvest/woundsim#readme"
+Repository = "https://github.com/smarttechinvest/woundsim"
+Issues = "https://github.com/smarttechinvest/woundsim/issues"
+Changelog = "https://github.com/smarttechinvest/woundsim/blob/main/CHANGELOG.md"
+
+[project.entry-points."gymnasium.envs.__root__"]
+woundsim = "woundsim"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = [
+    "E501",   # line length handled by formatter
+    "E741",   # ambiguous variable names (O, V, M, F, E, G, I) are standard in ODE models
+    "N803",   # argument names follow scientific notation (O_hyperox_thresh)
+    "N806",   # variable names follow scientific notation (O, V, M, F, E, G, I)
+    "N815",   # class scope mixedCase follows parameter naming conventions from papers
+    "B905",   # zip strict not needed for matched-length scientific arrays
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

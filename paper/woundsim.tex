@@ -1,0 +1,97 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\title{WoundSim: Gymnasium-Compatible Reinforcement Learning Environments\\for Wound Healing Treatment Optimization}
+\author{Hass Dhia\\
+Smart Technology Investments Research Institute\\
+\texttt{hass@smarttechinvest.com}}
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present WoundSim, a suite of four Gymnasium-compatible reinforcement learning environments for optimizing wound healing treatment protocols. Each environment wraps a validated ordinary differential equation (ODE) model from the wound healing literature: (1) Zlobina macrophage polarization (5 variables), (2) simplified Xue-Friedman ischemic wound healing (6 variables), (3) Flegg hyperbaric oxygen therapy angiogenesis (4 variables), and (4) an extended diabetic wound model with glucose-insulin dynamics (7 variables). All model parameters are sourced from peer-reviewed publications. We provide random, clinical heuristic, and PPO baselines, demonstrating that learned policies can discover treatment strategies that outperform fixed clinical protocols. WoundSim enables reproducible RL research on biologically grounded wound healing problems with configurable difficulty tiers.
+\end{abstract}
+
+\section{Introduction}
+
+Chronic wounds affect millions of patients worldwide and represent a significant healthcare burden \citep{brewer2020, schultz2003}. Mathematical models of wound healing have provided valuable insight into the biological mechanisms governing tissue repair \citep{sherratt1990, menon2017, gomez2019}, yet the translation of these models into actionable treatment optimization frameworks remains limited.
+
+Reinforcement learning (RL) offers a natural framework for sequential treatment optimization, where an agent learns to select interventions based on the evolving wound state \citep{lu2024}. However, the wound healing RL community lacks standardized benchmark environments with validated biological dynamics, configurable difficulty, and compatibility with modern RL libraries.
+
+We address this gap with WoundSim, a Python package providing four Gymnasium-compatible \citep{gymnasium} environments, each grounded in published ODE models of wound healing. Our environments support Stable-Baselines3 \citep{sb3} out of the box and include clinical heuristic baselines for meaningful comparison.
+
+\section{Related Work}
+
+\citet{zlobina2022} introduced an optimal control formulation for macrophage polarization in wound healing using a 5-variable ODE model. \citet{lu2024} applied deep RL to a similar macrophage polarization problem, demonstrating that learned policies can outperform constant treatment protocols. \citet{xue2009} developed a 9-variable PDE model of ischemic wound healing, later extended by \citet{friedman2009}. \citet{flegg2009, flegg2010} modeled the effect of hyperbaric oxygen therapy on wound healing through angiogenesis dynamics. \citet{waugh2006} studied macrophage dynamics specifically in diabetic wounds, highlighting the role of hyperglycemia in impairing the M1-to-M2 transition.
+
+\section{Environments}
+
+\subsection{WoundMacrophage-v0}
+
+Based on \citet{zlobina2022}, this environment models macrophage M1/M2 polarization with 5 state variables: wound debris $a$, M1 density $m_1$, M2 density $m_2$, granulation tissue $c$, and permanent tissue $n$. The agent controls a scalar polarization signal $u \in [0,1]$.
+
+\begin{align}
+\frac{da}{dt} &= -\gamma_a \, a \, (m_1 + m_2) \\
+\frac{dm_1}{dt} &= s_m \frac{a}{a + K_a} - \mu_m \, m_1 - \delta \, u \, m_1 \\
+\frac{dm_2}{dt} &= \delta \, u \, m_1 - \mu_m \, m_2 + s_{m2} \frac{c}{c + K_c} \\
+\frac{dc}{dt} &= s_c \frac{m_2}{m_2 + K_{m2}} - \mu_c \, c \, n \\
+\frac{dn}{dt} &= s_n \, c - \mu_n \, n \, (1 - n)
+\end{align}
+
+\subsection{WoundIschemic-v0}
+
+Simplified from \citet{xue2009} to 6 variables: wound area $w$, oxygen tension $O$, VEGF concentration $V$, macrophage density $M$, fibroblast density $F$, and ECM density $E$. The agent controls revascularization intensity and growth factor application.
+
+\subsection{WoundHBOT-v0}
+
+Based on \citet{flegg2009, flegg2010}, modeling HBOT-driven angiogenesis with 4 variables: capillary tip density $b$, sprout density $n_{cap}$, oxygen tension $O$, and wound area $w$. The agent controls HBOT session intensity and duration.
+
+\subsection{WoundDiabetic-v0}
+
+An extended 7-variable model incorporating glucose-insulin dynamics from \citet{waugh2006} with macrophage polarization from \citet{zlobina2022}. Elevated glucose impairs the M1-to-M2 transition, increases debris accumulation, and delays ECM formation. The agent must simultaneously manage wound treatment and glycemic control.
+
+\section{Experimental Setup}
+
+We train PPO \citep{sb3} on each environment and compare against random and clinical heuristic baselines. Each agent is evaluated over 50 episodes. Training uses the hyperparameters specified in the shared \texttt{ENV\_CONFIGS} dictionary.
+
+\section{Results}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/training_curves.png}
+\caption{Training curves for PPO across all four environments. Shaded regions indicate one standard deviation. Dashed lines show random and heuristic baseline performance.}
+\label{fig:training}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/baseline_comparison.png}
+\caption{Comparison of mean episode rewards across agents and environments. Error bars indicate one standard deviation over 50 evaluation episodes.}
+\label{fig:comparison}
+\end{figure}
+
+\section{Discussion}
+
+WoundSim provides a standardized platform for RL research on wound healing treatment optimization. The environments span a range of biological complexity (4--7 state variables) and treatment modalities (polarization, revascularization, HBOT, insulin). Configurable difficulty tiers enable curriculum learning and systematic evaluation across wound severities.
+
+\section{Conclusion}
+
+We introduced WoundSim, a suite of four Gymnasium-compatible RL environments grounded in published ODE models of wound healing. The package includes validated biological dynamics, clinical heuristic baselines, and full SB3 compatibility, enabling reproducible research at the intersection of reinforcement learning and wound care.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
