@@ -4,9 +4,9 @@
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Tests](https://img.shields.io/badge/tests-173%20passing-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-190%20passing-brightgreen.svg)
 [![PyPI version](https://img.shields.io/pypi/v/woundsim.svg)](https://pypi.org/project/woundsim/)
-![version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![version](https://img.shields.io/badge/version-0.1.1-blue.svg)
 
 ---
 

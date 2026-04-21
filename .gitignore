@@ -42,6 +42,11 @@ htmlcov/
 # Results - exclude trained models, keep JSON
 results/models/
 
+# Internal review / feedback artifacts (not shipped)
+.reviews/
+feedback/
+.research-project.json
+
 # OS
 .DS_Store
 Thumbs.db

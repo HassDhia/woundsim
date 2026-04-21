@@ -1,0 +1,37 @@
+{
+  "description": "Structural calibration of woundsim ODE environments against the state dimensions and key parameters claimed in paper/woundsim.tex.",
+  "environments": [
+    {
+      "env_id": "woundsim/WoundMacrophage-v0",
+      "expected_state_dim": 5,
+      "observed_state_dim": 5,
+      "primary_source": "zlobina2022",
+      "state_dim_match": true
+    },
+    {
+      "env_id": "woundsim/WoundIschemic-v0",
+      "expected_state_dim": 6,
+      "observed_state_dim": 6,
+      "primary_source": "xue2009",
+      "state_dim_match": true
+    },
+    {
+      "O_thresh_match": true,
+      "env_id": "woundsim/WoundHBOT-v0",
+      "expected_O_thresh_mmHg": 40.0,
+      "expected_state_dim": 4,
+      "observed_O_thresh_mmHg": 40.0,
+      "observed_state_dim": 4,
+      "primary_source": "flegg2009/flegg2010",
+      "state_dim_match": true
+    },
+    {
+      "env_id": "woundsim/WoundDiabetic-v0",
+      "expected_state_dim": 7,
+      "observed_state_dim": 7,
+      "primary_source": "zlobina2022 (extended)",
+      "state_dim_match": true
+    }
+  ],
+  "schema_version": "1"
+}
