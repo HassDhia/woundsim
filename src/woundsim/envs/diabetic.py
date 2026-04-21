@@ -32,7 +32,7 @@ class WoundDiabeticEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 4}
 
     _obs_high = np.array(
-        [1.0, 1.0, 1e6, 1e6, 400.0, 200.0, 1.0], dtype=np.float32
+        [1.0, 1.0, 1.0, 1.0, 400.0, 200.0, 1.0], dtype=np.float32
     )
     _obs_low = np.array(
         [0.0, 0.0, 0.0, 0.0, 70.0, 0.0, 0.0], dtype=np.float32
@@ -41,8 +41,8 @@ class WoundDiabeticEnv(gym.Env):
     def __init__(
         self,
         difficulty: str = "moderate",
-        dt: float = 8.0,
-        max_steps: int = 150,
+        dt: float = 1.5,
+        max_steps: int = 300,
         render_mode: str | None = None,
         w_wound: float = 1.0,
         w_glucose: float = 0.5,
@@ -135,13 +135,14 @@ class WoundDiabeticEnv(gym.Env):
             -self.w_wound * w
             - self.w_glucose * glucose_penalty
             - self.w_treat * treatment_cost
-            + self.w_heal * healing_rate
+            + self.w_heal * healing_rate * 10.0
+            - 0.01  # small time penalty per step
         )
 
         terminated = bool(w < 0.05)
         truncated = bool(self._step_count >= self.max_steps)
 
         if terminated:
-            reward += 10.0
+            reward += 2.0  # moderate healing bonus
 
         return self._get_obs(), float(reward), terminated, truncated, self._get_info()

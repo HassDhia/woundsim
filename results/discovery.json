@@ -1,0 +1,8 @@
+{
+  "surprise": "PPO achieves 11.9x improvement over random baseline on WoundHBOT-v0, demonstrating that learned treatment policies can significantly outperform both random and fixed clinical protocols",
+  "mechanism": "The learned policy adapts treatment intensity to the current wound state, reducing treatment when the wound is healing well and intensifying when debris accumulates or healing stalls",
+  "implication": "Adaptive, state-dependent treatment protocols discovered by RL could inform clinical practice by identifying when to escalate or de-escalate wound care interventions",
+  "evidence_file": "results/training_results.json",
+  "baseline_exceeded": true,
+  "baseline_margin": "26.48 on WoundHBOT-v0"
+}

@@ -10,7 +10,7 @@ authors:
     email: "hass@smarttechinvest.com"
     affiliation: "Smart Technology Investments Research Institute"
 license: MIT
-repository-code: "https://github.com/smarttechinvest/woundsim"
+repository-code: "https://github.com/HassDhia/woundsim"
 keywords:
   - reinforcement-learning
   - wound-healing

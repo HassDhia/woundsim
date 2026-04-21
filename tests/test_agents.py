@@ -104,8 +104,8 @@ class TestHeuristicAgent:
         agent = HeuristicAgent(env, env_id="woundsim/WoundHBOT-v0")
         obs, _ = env.reset(seed=42)
         action, _ = agent.predict(obs)
-        assert action[0] == pytest.approx(0.7)
-        assert action[1] == pytest.approx(0.75)
+        assert action[0] == pytest.approx(0.3)
+        assert action[1] == pytest.approx(0.4)
         env.close()
 
     def test_diabetic_heuristic_insulin_scaling(self):

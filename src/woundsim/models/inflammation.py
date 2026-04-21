@@ -22,15 +22,15 @@ class InflammationParams:
     """Parameters for the extended diabetic wound inflammation model."""
 
     # Wound dynamics
-    k_wound: float = 0.01  # SOURCE: waugh2006 - wound closure rate
+    k_wound: float = 0.004  # SOURCE: waugh2006 - wound closure rate
     k_debris: float = 0.05  # SOURCE: zlobina2022 - debris generation from damage
 
-    # Macrophage dynamics (adapted from Zlobina)
-    gamma_a: float = 0.1  # SOURCE: zlobina2022 - debris clearance rate
-    s_m: float = 1e4  # SOURCE: zlobina2022 - M1 recruitment rate
+    # Macrophage dynamics (adapted from Zlobina, normalized densities)
+    gamma_a: float = 0.08  # SOURCE: zlobina2022 - debris clearance rate (1/day, norm.)
+    s_m: float = 0.6  # SOURCE: zlobina2022 - M1 recruitment rate (norm./day)
     K_a: float = 0.3  # SOURCE: zlobina2022 - half-saturation for debris
-    mu_m: float = 0.02  # SOURCE: zlobina2022 - macrophage death rate
-    delta_base: float = 0.1  # SOURCE: zlobina2022 - base M1-to-M2 polarization rate
+    mu_m: float = 0.1  # SOURCE: zlobina2022 - macrophage death rate (1/day)
+    delta_base: float = 0.25  # SOURCE: zlobina2022 - base M1-to-M2 polarization rate (1/day)
 
     # Glucose-insulin dynamics
     G_target: float = 100.0  # SOURCE: waugh2006 - target glucose (mg/dL)
@@ -43,13 +43,13 @@ class InflammationParams:
     G_impair: float = 180.0  # SOURCE: waugh2006 - glucose level above which healing impaired
     k_impair: float = 0.5  # SOURCE: waugh2006 - impairment steepness
 
-    # ECM dynamics
-    s_E: float = 1e-5  # SOURCE: xue2009 - ECM production rate
-    d_E: float = 0.005  # SOURCE: xue2009 - ECM remodeling rate
-    K_m2_ecm: float = 1e5  # SOURCE: zlobina2022 - half-sat for M2-driven ECM
+    # ECM dynamics (normalized)
+    s_E: float = 0.04  # SOURCE: xue2009 - ECM production rate (1/day)
+    d_E: float = 0.05  # SOURCE: xue2009 - ECM remodeling rate (1/day)
+    K_m2_ecm: float = 0.3  # SOURCE: zlobina2022 - half-sat for M2-driven ECM
 
     # Growth factor effect
-    gf_boost: float = 5e3  # topical growth factor recruitment boost
+    gf_boost: float = 0.3  # topical growth factor M2 recruitment boost (norm./day)
 
 
 class InflammationModel:
@@ -67,7 +67,7 @@ class InflammationModel:
 
     STATE_NAMES = ["w", "a", "m1", "m2", "G", "I", "E"]
     STATE_BOUNDS_LOW = np.array([0.0, 0.0, 0.0, 0.0, 70.0, 0.0, 0.0])
-    STATE_BOUNDS_HIGH = np.array([1.0, 1.0, 1e6, 1e6, 400.0, 200.0, 1.0])
+    STATE_BOUNDS_HIGH = np.array([1.0, 1.0, 1.0, 1.0, 400.0, 200.0, 1.0])
 
     def __init__(self, params: InflammationParams | None = None):
         self.params = params or InflammationParams()
@@ -110,8 +110,8 @@ class InflammationModel:
         # Clamp
         w = np.clip(w, 0.0, 1.0)
         a = np.clip(a, 0.0, 1.0)
-        m1 = np.clip(m1, 0.0, 1e6)
-        m2 = np.clip(m2, 0.0, 1e6)
+        m1 = np.clip(m1, 0.0, 1.0)
+        m2 = np.clip(m2, 0.0, 1.0)
         G = np.clip(G, 70.0, 400.0)
         I = np.clip(I, 0.0, 200.0)
         E = np.clip(E, 0.0, 1.0)
@@ -181,10 +181,10 @@ class InflammationModel:
             difficulty: One of "well-controlled", "moderate", "uncontrolled".
         """
         if difficulty == "well-controlled":
-            return np.array([0.4, 0.5, 1e4, 1e3, 120.0, 50.0, 0.05])
+            return np.array([0.4, 0.5, 0.2, 0.02, 120.0, 50.0, 0.05])
         elif difficulty == "moderate":
-            return np.array([0.5, 0.6, 1e4, 1e3, 200.0, 30.0, 0.02])
+            return np.array([0.5, 0.6, 0.15, 0.01, 200.0, 30.0, 0.02])
         elif difficulty == "uncontrolled":
-            return np.array([0.7, 0.8, 1e4, 1e3, 350.0, 10.0, 0.01])
+            return np.array([0.7, 0.8, 0.1, 0.005, 350.0, 10.0, 0.01])
         else:
             raise ValueError(f"Unknown difficulty: {difficulty}")

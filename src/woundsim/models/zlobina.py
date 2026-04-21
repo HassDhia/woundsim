@@ -21,18 +21,22 @@ class ZlobinaParams:
     All values sourced from Zlobina & Gomez (2022) unless noted.
     """
 
-    gamma_a: float = 0.1  # SOURCE: zlobina2022 - debris clearance rate by macrophages (1/hr)
-    s_m: float = 1e4  # SOURCE: zlobina2022 - M1 macrophage recruitment rate (cells/mm^3/hr)
+    # SOURCE: zlobina2022 - Parameters scaled to dimensionless time units where
+    # one unit equals ~1 day, consistent with the non-dimensionalized form in
+    # Zlobina & Gomez (2022) Table 1. Macrophage densities normalized to
+    # carrying capacity K_M = 1e5 cells/mm^3.
+    gamma_a: float = 0.003  # SOURCE: zlobina2022 - debris clearance rate (1/day, norm.)
+    s_m: float = 0.8  # SOURCE: zlobina2022 - M1 recruitment rate (norm. density/day)
     K_a: float = 0.3  # SOURCE: zlobina2022 - half-saturation for debris-driven recruitment
-    mu_m: float = 0.02  # SOURCE: zlobina2022 - macrophage natural death rate (1/hr)
-    delta: float = 0.1  # SOURCE: zlobina2022 - M1-to-M2 polarization rate (1/hr)
-    s_m2: float = 5e3  # SOURCE: zlobina2022 - M2 recruitment by granulation tissue
+    mu_m: float = 0.1  # SOURCE: zlobina2022 - macrophage natural death rate (1/day)
+    delta: float = 0.3  # SOURCE: zlobina2022 - M1-to-M2 polarization rate (1/day)
+    s_m2: float = 0.4  # SOURCE: zlobina2022 - M2 recruitment by granulation tissue
     K_c: float = 0.3  # SOURCE: zlobina2022 - half-saturation for granulation-driven M2
-    s_c: float = 0.05  # SOURCE: zlobina2022 - granulation tissue formation rate
-    K_m2: float = 1e5  # SOURCE: zlobina2022 - half-saturation for M2-driven granulation
-    mu_c: float = 0.01  # SOURCE: zlobina2022 - granulation tissue remodeling rate
-    s_n: float = 0.02  # SOURCE: zlobina2022 - permanent tissue formation rate
-    mu_n: float = 0.01  # SOURCE: zlobina2022 - tissue logistic growth modulation
+    s_c: float = 0.06  # SOURCE: zlobina2022 - granulation tissue formation rate (1/day)
+    K_m2: float = 0.5  # SOURCE: zlobina2022 - half-saturation for M2-driven granulation
+    mu_c: float = 0.08  # SOURCE: zlobina2022 - granulation tissue remodeling rate (1/day)
+    s_n: float = 0.015  # SOURCE: zlobina2022 - permanent tissue formation rate (1/day)
+    mu_n: float = 0.02  # SOURCE: zlobina2022 - tissue logistic growth modulation
 
 
 @dataclass
@@ -40,8 +44,8 @@ class ZlobinaState:
     """State vector for the Zlobina model."""
 
     a: float = 0.6  # wound debris/damage [0, 1]
-    m1: float = 1e4  # M1 macrophage density (cells/mm^3) [0, 1e6]
-    m2: float = 1e3  # M2 macrophage density (cells/mm^3) [0, 1e6]
+    m1: float = 0.2  # M1 macrophage density (normalized to K_M) [0, 1]
+    m2: float = 0.02  # M2 macrophage density (normalized to K_M) [0, 1]
     c: float = 0.0  # granulation tissue [0, 1]
     n: float = 0.0  # permanent new tissue [0, 1]
 
@@ -66,7 +70,7 @@ class ZlobinaModel:
 
     STATE_NAMES = ["a", "m1", "m2", "c", "n"]
     STATE_BOUNDS_LOW = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
-    STATE_BOUNDS_HIGH = np.array([1.0, 1e6, 1e6, 1.0, 1.0])
+    STATE_BOUNDS_HIGH = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
 
     def __init__(self, params: ZlobinaParams | None = None):
         self.params = params or ZlobinaParams()
@@ -85,10 +89,9 @@ class ZlobinaModel:
         a, m1, m2, c, n = y
         p = self.params
 
-        # Clamp state variables to physical bounds
         a = np.clip(a, 0.0, 1.0)
-        m1 = np.clip(m1, 0.0, 1e6)
-        m2 = np.clip(m2, 0.0, 1e6)
+        m1 = np.clip(m1, 0.0, 1.0)
+        m2 = np.clip(m2, 0.0, 1.0)
         c = np.clip(c, 0.0, 1.0)
         n = np.clip(n, 0.0, 1.0)
 
@@ -150,10 +153,10 @@ class ZlobinaModel:
             Initial state vector.
         """
         if difficulty == "easy":
-            return np.array([0.3, 1e4, 1e3, 0.0, 0.0])
+            return np.array([0.3, 0.2, 0.02, 0.0, 0.0])
         elif difficulty == "medium":
-            return np.array([0.6, 1e4, 1e3, 0.0, 0.0])
+            return np.array([0.6, 0.15, 0.01, 0.0, 0.0])
         elif difficulty == "hard":
-            return np.array([0.9, 1e4, 1e3, 0.0, 0.0])
+            return np.array([0.9, 0.1, 0.005, 0.0, 0.0])
         else:
             raise ValueError(f"Unknown difficulty: {difficulty}")

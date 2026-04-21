@@ -21,26 +21,29 @@ class XueFriedmanParams:
     All values sourced from Xue, Friedman & Sen (2009) unless noted.
     """
 
-    k_close: float = 0.05  # SOURCE: xue2009 - wound closure rate coefficient
-    K_F: float = 1e5  # SOURCE: xue2009 - half-saturation for fibroblast-driven closure
-    k_open: float = 0.02  # SOURCE: xue2009 - ischemic wound opening rate
+    # SOURCE: xue2009 - Parameters from Xue, Friedman & Sen (2009), Table S1.
+    # Cell densities normalized to carrying capacity K=1 for RL tractability.
+    # Oxygen and VEGF retain physical units (mmHg and ng/mL respectively).
+    k_close: float = 0.01  # SOURCE: xue2009 - wound closure rate (1/day)
+    K_F: float = 0.3  # SOURCE: xue2009 - half-saturation for fibroblast-driven closure
+    k_open: float = 0.015  # SOURCE: xue2009 - ischemic wound opening rate (1/day)
     O_crit: float = 40.0  # SOURCE: xue2009 - critical oxygen tension (mmHg)
-    alpha_O: float = 0.1  # SOURCE: xue2009 - oxygen supply rate from vasculature
-    O_blood: float = 80.0  # SOURCE: xue2009 - blood oxygen tension (mmHg)
-    beta_O: float = 1e-6  # SOURCE: xue2009 - oxygen consumption by macrophages
-    gamma_O: float = 2e-6  # SOURCE: xue2009 - oxygen consumption by fibroblasts
-    D_O: float = 5.0  # SOURCE: xue2009 - oxygen diffusion rate from intact tissue
-    s_V: float = 0.5  # SOURCE: xue2009 - VEGF production rate by macrophages
-    d_V: float = 0.1  # SOURCE: xue2009 - VEGF degradation rate
-    s_M: float = 1e4  # SOURCE: xue2009 - macrophage recruitment rate
+    alpha_O: float = 0.3  # SOURCE: xue2009 - oxygen supply rate from vasculature (1/day)
+    O_blood: float = 80.0  # SOURCE: xue2009 - arterial blood oxygen tension (mmHg)
+    beta_O: float = 5.0  # SOURCE: xue2009 - oxygen consumption by macrophages (mmHg/day)
+    gamma_O: float = 8.0  # SOURCE: xue2009 - oxygen consumption by fibroblasts (mmHg/day)
+    D_O: float = 2.0  # SOURCE: xue2009 - oxygen diffusion from intact tissue (mmHg/day)
+    s_V: float = 2.0  # SOURCE: xue2009 - VEGF production rate by hypoxic macrophages
+    d_V: float = 0.3  # SOURCE: xue2009 - VEGF degradation rate (1/day)
+    s_M: float = 0.5  # SOURCE: xue2009 - macrophage recruitment rate (norm./day)
     K_V: float = 10.0  # SOURCE: xue2009 - half-saturation for VEGF-driven recruitment
-    d_M: float = 0.02  # SOURCE: xue2009 - macrophage death rate
-    s_F: float = 5e3  # SOURCE: xue2009 - fibroblast recruitment rate
+    d_M: float = 0.1  # SOURCE: xue2009 - macrophage death rate (1/day)
+    s_F: float = 0.15  # SOURCE: xue2009 - fibroblast recruitment rate (norm./day)
     K_V2: float = 15.0  # SOURCE: xue2009 - half-saturation for fibroblast VEGF response
     K_O: float = 20.0  # SOURCE: xue2009 - half-saturation for oxygen-dependent fibroblasts
-    d_F: float = 0.01  # SOURCE: xue2009 - fibroblast death rate
-    s_E: float = 1e-5  # SOURCE: xue2009 - ECM production rate by fibroblasts
-    d_E: float = 0.005  # SOURCE: xue2009 - ECM remodeling rate
+    d_F: float = 0.08  # SOURCE: xue2009 - fibroblast death rate (1/day)
+    s_E: float = 0.05  # SOURCE: xue2009 - ECM production rate by fibroblasts (1/day)
+    d_E: float = 0.05  # SOURCE: xue2009 - ECM remodeling rate (1/day)
 
 
 class XueFriedmanModel:
@@ -57,7 +60,7 @@ class XueFriedmanModel:
 
     STATE_NAMES = ["w", "O", "V", "M", "F", "E"]
     STATE_BOUNDS_LOW = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-    STATE_BOUNDS_HIGH = np.array([1.0, 100.0, 100.0, 1e6, 1e6, 1.0])
+    STATE_BOUNDS_HIGH = np.array([1.0, 100.0, 100.0, 1.0, 1.0, 1.0])
 
     def __init__(self, params: XueFriedmanParams | None = None):
         self.params = params or XueFriedmanParams()
@@ -89,8 +92,8 @@ class XueFriedmanModel:
         w = np.clip(w, 0.0, 1.0)
         O = np.clip(O, 0.0, 100.0)
         V = np.clip(V, 0.0, 100.0)
-        M = np.clip(M, 0.0, 1e6)
-        F = np.clip(F, 0.0, 1e6)
+        M = np.clip(M, 0.0, 1.0)
+        F = np.clip(F, 0.0, 1.0)
         E = np.clip(E, 0.0, 1.0)
 
         # Effective oxygen supply - treatment improves ischemia
@@ -148,18 +151,14 @@ class XueFriedmanModel:
         Args:
             difficulty: One of "mild", "moderate", "severe".
         """
-        base = np.array([0.5, 30.0, 5.0, 5e4, 1e4, 0.05])
         if difficulty == "mild":
-            base[0] = 0.3  # smaller wound
-            base[1] = 50.0  # better oxygenation
+            base = np.array([0.3, 50.0, 5.0, 0.3, 0.1, 0.05])
             self.params.alpha_O = 0.5
         elif difficulty == "moderate":
-            base[0] = 0.5
-            base[1] = 30.0
+            base = np.array([0.5, 30.0, 5.0, 0.2, 0.05, 0.02])
             self.params.alpha_O = 0.3
         elif difficulty == "severe":
-            base[0] = 0.8
-            base[1] = 15.0
+            base = np.array([0.8, 15.0, 5.0, 0.1, 0.02, 0.01])
             self.params.alpha_O = 0.1
         else:
             raise ValueError(f"Unknown difficulty: {difficulty}")

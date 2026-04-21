@@ -6,7 +6,7 @@ Thank you for your interest in contributing to WoundSim.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/smarttechinvest/woundsim.git
+   git clone https://github.com/HassDhia/woundsim.git
    cd woundsim
    ```
 

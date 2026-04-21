@@ -28,13 +28,13 @@ class WoundMacrophageEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 4}
 
     # Normalization bounds for observation space
-    _obs_high = np.array([1.0, 1e6, 1e6, 1.0, 1.0], dtype=np.float32)
+    _obs_high = np.array([1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float32)
 
     def __init__(
         self,
         difficulty: str = "medium",
-        dt: float = 6.0,
-        max_steps: int = 100,
+        dt: float = 1.0,
+        max_steps: int = 200,
         render_mode: str | None = None,
         noise_scale: float = 0.0,
         w_a: float = 1.0,
@@ -127,11 +127,11 @@ class WoundMacrophageEnv(gym.Env):
         dn = n - self._prev_n
         self._prev_n = n
 
-        # Reward: penalize debris, time, treatment cost; reward tissue growth
+        # Reward: penalize debris, time, treatment cost; reward tissue growth rate
         reward = (
             -self.w_a * a
-            - self.w_time * self.dt
-            + self.w_n * dn
+            - self.w_time * 0.01
+            + self.w_n * dn * 10.0
             - self.w_u * u * u
         )
 
@@ -140,6 +140,6 @@ class WoundMacrophageEnv(gym.Env):
         truncated = bool(self._step_count >= self.max_steps)
 
         if terminated:
-            reward += 10.0  # bonus for successful healing
+            reward += 2.0  # moderate healing bonus
 
         return self._get_obs(), float(reward), terminated, truncated, self._get_info()

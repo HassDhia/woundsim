@@ -29,13 +29,13 @@ class WoundIschemicEnv(gym.Env):
 
     metadata = {"render_modes": ["human"], "render_fps": 4}
 
-    _obs_high = np.array([1.0, 100.0, 100.0, 1e6, 1e6, 1.0], dtype=np.float32)
+    _obs_high = np.array([1.0, 100.0, 100.0, 1.0, 1.0, 1.0], dtype=np.float32)
 
     def __init__(
         self,
         difficulty: str = "moderate",
-        dt: float = 12.0,
-        max_steps: int = 200,
+        dt: float = 2.0,
+        max_steps: int = 300,
         render_mode: str | None = None,
         w_wound: float = 1.0,
         w_time: float = 0.005,
@@ -116,8 +116,8 @@ class WoundIschemicEnv(gym.Env):
         treatment_cost = float(np.sum(action**2))
         reward = (
             -self.w_wound * w
-            - self.w_time * self.dt
-            + self.w_ecm * dE
+            - self.w_time * 0.01
+            + self.w_ecm * dE * 10.0
             - self.w_treat * treatment_cost
         )
 
@@ -125,6 +125,6 @@ class WoundIschemicEnv(gym.Env):
         truncated = bool(self._step_count >= self.max_steps)
 
         if terminated:
-            reward += 10.0
+            reward += 2.0  # moderate healing bonus
 
         return self._get_obs(), float(reward), terminated, truncated, self._get_info()

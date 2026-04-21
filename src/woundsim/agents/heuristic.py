@@ -67,12 +67,13 @@ class HeuristicAgent:
         return np.array([1.0, 0.5], dtype=np.float32)
 
     def _hbot_heuristic(self, obs: np.ndarray) -> np.ndarray:
-        """Standard HBOT protocol: 2.4 atm, 90 min daily.
+        """Moderate HBOT protocol: balanced to sustain angiogenesis.
 
-        Maps to: intensity = (2.4 - 1.0) / (3.0 - 1.0) = 0.7
-                 duration = 90 / 120 = 0.75
+        Moderate intensity keeps oxygen below the O_thresh that
+        suppresses capillary tip sprouting, preserving the
+        vascularization pathway needed for wound closure.
         """
-        return np.array([0.7, 0.75], dtype=np.float32)
+        return np.array([0.3, 0.4], dtype=np.float32)
 
     def _diabetic_heuristic(self, obs: np.ndarray) -> np.ndarray:
         """Standard wound care + insulin sliding scale.

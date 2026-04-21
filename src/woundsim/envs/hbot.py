@@ -29,13 +29,13 @@ class WoundHBOTEnv(gym.Env):
 
     metadata = {"render_modes": ["human"], "render_fps": 4}
 
-    _obs_high = np.array([1e4, 1e4, 300.0, 1.0], dtype=np.float32)
+    _obs_high = np.array([1.0, 1.0, 300.0, 1.0], dtype=np.float32)
 
     def __init__(
         self,
         difficulty: str = "chronic",
-        dt: float = 24.0,
-        max_steps: int = 90,
+        dt: float = 4.0,
+        max_steps: int = 240,
         render_mode: str | None = None,
         w_heal: float = 5.0,
         w_cost: float = 0.2,
@@ -118,15 +118,16 @@ class WoundHBOTEnv(gym.Env):
         hyperox_penalty = max(0.0, O - self.O_hyperox_thresh) / 100.0
 
         reward = (
-            self.w_heal * healing_rate
+            self.w_heal * healing_rate * 10.0
             - self.w_cost * treatment_cost
             - self.w_hyperox * hyperox_penalty
+            - 0.01  # small time penalty per step
         )
 
         terminated = bool(w < 0.05)
         truncated = bool(self._step_count >= self.max_steps)
 
         if terminated:
-            reward += 10.0
+            reward += 2.0  # moderate healing bonus
 
         return self._get_obs(), float(reward), terminated, truncated, self._get_info()

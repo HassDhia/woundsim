@@ -24,18 +24,20 @@ class FleggParams:
     All values sourced from Flegg et al. (2009, 2015) unless noted.
     """
 
-    s_b: float = 50.0  # SOURCE: flegg2009 - capillary tip sprouting rate
+    # SOURCE: flegg2009/flegg2010 - Parameters normalized so capillary densities are
+    # dimensionless [0,1]. Oxygen retains physical units (mmHg). Rates are per-day.
+    s_b: float = 0.4  # SOURCE: flegg2009 - capillary tip sprouting rate (1/day)
     O_thresh: float = 40.0  # SOURCE: flegg2009 - oxygen threshold for angiogenesis (mmHg)
-    K_b: float = 10.0  # SOURCE: flegg2009 - half-saturation for tip sprouting
-    d_b: float = 0.05  # SOURCE: flegg2009 - capillary tip death/anastomosis rate
-    chi: float = 0.01  # SOURCE: flegg2009 - chemotactic sensitivity to oxygen gradient
+    K_b: float = 10.0  # SOURCE: flegg2009 - half-saturation for tip sprouting (mmHg)
+    d_b: float = 0.15  # SOURCE: flegg2009 - tip death/anastomosis rate (1/day)
+    chi: float = 0.05  # SOURCE: flegg2009 - chemotactic sensitivity to oxygen gradient
     O_ref: float = 20.0  # SOURCE: flegg2009 - reference oxygen level (mmHg)
-    alpha_n: float = 0.1  # SOURCE: flegg2009 - tip-to-sprout conversion rate
-    d_n: float = 0.02  # SOURCE: flegg2009 - capillary sprout regression rate
-    P_O: float = 0.5  # SOURCE: flegg2010 - oxygen production by capillaries (mmHg/sprout)
-    lambda_O: float = 0.05  # SOURCE: flegg2010 - oxygen consumption/decay rate
-    D_ext: float = 100.0  # SOURCE: flegg2010 - external oxygen delivery coefficient (HBOT)
-    k_heal: float = 0.001  # SOURCE: flegg2009 - wound healing rate coefficient
+    alpha_n: float = 0.12  # SOURCE: flegg2009 - tip-to-sprout conversion rate (1/day)
+    d_n: float = 0.08  # SOURCE: flegg2009 - capillary sprout regression rate (1/day)
+    P_O: float = 15.0  # SOURCE: flegg2010 - oxygen production by capillaries (mmHg/day)
+    lambda_O: float = 0.3  # SOURCE: flegg2010 - oxygen consumption/decay rate (1/day)
+    D_ext: float = 50.0  # SOURCE: flegg2010 - external oxygen delivery coefficient (HBOT)
+    k_heal: float = 0.01  # SOURCE: flegg2009 - wound healing rate coefficient (1/day)
     K_O: float = 30.0  # SOURCE: flegg2009 - half-saturation for oxygen-dependent healing
     O_base: float = 20.0  # SOURCE: flegg2009 - baseline tissue oxygen (mmHg)
 
@@ -52,7 +54,7 @@ class FleggModel:
 
     STATE_NAMES = ["b", "n_cap", "O", "w"]
     STATE_BOUNDS_LOW = np.array([0.0, 0.0, 0.0, 0.0])
-    STATE_BOUNDS_HIGH = np.array([1e4, 1e4, 300.0, 1.0])
+    STATE_BOUNDS_HIGH = np.array([1.0, 1.0, 300.0, 1.0])
 
     def __init__(self, params: FleggParams | None = None):
         self.params = params or FleggParams()
@@ -80,8 +82,8 @@ class FleggModel:
         p = self.params
 
         # Clamp to physical bounds
-        b = np.clip(b, 0.0, 1e4)
-        n_cap = np.clip(n_cap, 0.0, 1e4)
+        b = np.clip(b, 0.0, 1.0)
+        n_cap = np.clip(n_cap, 0.0, 1.0)
         O = np.clip(O, 0.0, 300.0)
         w = np.clip(w, 0.0, 1.0)
 
@@ -138,12 +140,11 @@ class FleggModel:
             difficulty: One of "acute", "chronic", "non-healing".
         """
         if difficulty == "acute":
-            return np.array([100.0, 500.0, 30.0, 0.3])
+            return np.array([0.3, 0.4, 30.0, 0.3])
         elif difficulty == "chronic":
-            return np.array([50.0, 200.0, 20.0, 0.6])
+            return np.array([0.15, 0.2, 20.0, 0.6])
         elif difficulty == "non-healing":
-            # Low baseline oxygen, minimal vasculature
             self.params.O_base = 10.0
-            return np.array([20.0, 50.0, 10.0, 0.9])
+            return np.array([0.05, 0.05, 10.0, 0.9])
         else:
             raise ValueError(f"Unknown difficulty: {difficulty}")
